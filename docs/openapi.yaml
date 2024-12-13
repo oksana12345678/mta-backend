@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: <Contacts App>
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  description: <Service for working with contacts documentation. >
+tags:
+  - name: Contacts
+    description: Operations about contacts.
+  - name: Auth
+    description: Auth operations.
+servers:
+  - url: https://validation-5dsv.onrender.com
+paths:
+  /contacts/{id}:
+    get:
+      $ref: '../swagger/paths/{id}/get.yaml'
+    delete:
+      $ref: '../swagger/paths/{id}/delete.yaml'
+    put:
+      $ref: '../swagger/paths/{id}/put.yaml'
+    patch:
+      $ref: '../swagger/paths/{id}/patch.yaml'
+  /contacts:
+    get:
+      $ref: '../swagger/paths/get.yaml'
+    post:
+      $ref: '../swagger/paths/post.yaml'
+  /auth/register:
+    post:
+      $ref: '../swagger/paths/register/post.yaml'
+  /auth/login:
+    post:
+      $ref: '../swagger/paths/login/post.yaml'
+  /auth/logout:
+    post:
+      $ref: '../swagger/paths/logout/post.yaml'
+  /users/current:
+    post:
+      $ref: '../swagger/paths/currentUser/post.yaml'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

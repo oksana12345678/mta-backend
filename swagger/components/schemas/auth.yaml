@@ -1,0 +1,18 @@
+type: object
+required:
+  - name
+  - email
+  - password
+properties:
+  name:
+    description: 'Name for registration'
+    type: string
+    example: 'John Doe'
+  email:
+    description: 'Email for registration and login'
+    type: string
+    example: 'example@gmail.com'
+  password:
+    description: 'Password for registration and login'
+    type: string
+    example: '13234gssu'
