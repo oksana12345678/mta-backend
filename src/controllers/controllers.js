@@ -1,11 +1,11 @@
 import createHttpError from 'http-errors';
 import {
-  createContact,
-  deleteContact,
-  getAllContacts,
-  getContactById,
-  updateContact,
-} from '../services/contacts.js';
+  createProduct,
+  deleteProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+} from '../services/products.js';
 import parsePaginationParams from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import parseFilterParams from '../utils/parseFilterParams.js';
@@ -13,18 +13,17 @@ import env from '../utils/evn.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import saveFileToUploadDir from '../utils/saveFileToUploadDir.js';
 
-export const getContactsController = async (req, res) => {
+export const getProductsController = async (req, res) => {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
   const filter = parseFilterParams(req.query);
 
-  const contacts = await getAllContacts({
+  const contacts = await getAllProducts({
     page,
     perPage,
     sortBy,
     sortOrder,
     filter,
-    userId: req.user._id,
   });
 
   res.status(200).json({
@@ -34,105 +33,111 @@ export const getContactsController = async (req, res) => {
   });
 };
 
-export const getContactByIdController = async (req, res) => {
-  const { contactId } = req.params;
-  const contact = await getContactById(contactId, req.user._id);
-
-  if (!contact) {
+export const getProductByIdController = async (req, res) => {
+  const { productId } = req.params;
+  const product = await getProductById(productId);
+  console.log('ProductId', productId);
+  if (!product) {
     throw createHttpError(404, 'Contact not found');
   }
 
   res.status(200).json({
     status: 200,
-    message: `Successfully found contact with id ${contactId}!`,
-    data: contact,
+    message: `Successfully found contact with id ${productId}!`,
+    data: product,
   });
 };
 
-export const createContactController = async (req, res) => {
-  const photo = req.file;
+export const createProductController = async (req, res) => {
+  const photos = req.files;
+  let photoUrls = [];
 
-  let photoUrl;
-
-  if (photo) {
-    if (env('ENABLE_CLOUDINARY') === 'true') {
-      photoUrl = await saveFileToCloudinary(photo);
-    } else {
-      photoUrl = await saveFileToUploadDir(photo);
+  if (photos && photos.length) {
+    for (const photo of photos) {
+      let photoUrl;
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
+      photoUrls.push(photoUrl);
     }
   }
 
-  const contactData = {
+  const productData = {
     ...req.body,
-    userId: req.user._id,
-    photo: photoUrl,
+    photo: photoUrls,
   };
-  const contact = await createContact(contactData);
+  const product = await createProduct(productData);
 
   res.status(201).json({
     status: 201,
-    message: `Successfully created a contact!`,
-    data: contact,
+    message: `Successfully created a product!`,
+    data: product,
   });
 };
 
-export const deleteContactController = async (req, res) => {
+export const deleteProductController = async (req, res) => {
   const { contactId } = req.params;
 
-  const contact = await deleteContact(contactId, req.user._id);
+  const contact = await deleteProduct(contactId, req.user._id);
 
   if (!contact) {
-    throw createHttpError(404, 'Contact not found');
+    throw createHttpError(404, 'Product not found');
   }
 
   res.status(204).send();
 };
 
-export const patchContactController = async (req, res) => {
-  const { contactId } = req.params;
-  const photo = req.file;
+export const patchProductController = async (req, res) => {
+  const { productId } = req.params;
+  const photos = req.files;
 
-  let photoUrl;
+  let photoUrls = [];
 
-  if (photo) {
-    if (env('ENABLE_CLOUDINARY') === 'true') {
-      photoUrl = await saveFileToCloudinary(photo);
-    } else {
-      photoUrl = await saveFileToUploadDir(photo);
+  if (photos && photos.length) {
+    for (const photo of photos) {
+      let photoUrl;
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
+      photoUrls.push(photoUrl);
     }
   }
-  const result = await updateContact(contactId, {
+
+  const result = await updateProduct(productId, {
     ...req.body,
-    userId: req.user._id,
-    photo: photoUrl,
+    photo: photoUrls,
   });
 
   if (!result) {
-    throw createHttpError(404, 'Contact not found');
+    throw createHttpError(404, 'Product not found');
   }
 
   res.json({
     status: 200,
-    message: 'Successfully patched a contact!',
-    data: result.contact,
+    message: 'Successfully patched a product!',
+    data: result.product,
   });
 };
 
 export const upsertContactController = async (req, res, next) => {
   try {
-    const { contactId } = req.params;
-    const result = await updateContact(contactId, req.body, req.user._id, {
+    const { productId } = req.params;
+    const result = await updateProduct(productId, req.body, req.user._id, {
       upsert: true,
     });
     console.log('result', result);
     console.log('Request body', req.body);
     if (!result) {
-      throw createHttpError(404, 'Contact not found!');
+      throw createHttpError(404, 'Product not found!');
     }
     const status = result.isNew ? 201 : 200;
     res.status(status).json({
       status,
-      message: 'Successfully upserted a contact!',
+      message: 'Successfully upserted a product!',
       data: result.contact,
     });
   } catch (err) {

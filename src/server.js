@@ -20,8 +20,7 @@ const setupServer = () => {
   app.use(cookieParser());
 
   const allowedOrigins = [
-    'https://n5xf4lmx-5174.euw.devtunnels.ms',
-    'https://phone-book-kohl.vercel.app',
+    'https://oksanaatom.netlify.app',
     'http://localhost:5173',
   ];
 
